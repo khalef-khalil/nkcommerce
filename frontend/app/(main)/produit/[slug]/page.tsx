@@ -5,10 +5,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { ShoppingCart, Heart, Star, Minus, Plus, ArrowLeft, ArrowRight } from "lucide-react";
-import { fetchProductBySlug, fetchProducts } from "../../services/api";
-import { Product } from "../../types";
+import { fetchProductBySlug, fetchProducts } from "../../../services/api";
+import { Product } from "../../../types";
 import { notFound } from "next/navigation";
 import toast from "react-hot-toast";
+import { useCart } from "../../../context/CartContext";
 
 interface ProductDetailPageProps {
   params: {
@@ -23,6 +24,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const { addToCart } = useCart();
 
   useEffect(() => {
     const loadData = async () => {
@@ -35,7 +37,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
         const allProducts = await fetchProducts();
         const related = allProducts
           .filter(
-            (p) => 
+            (p: Product) => 
               p.categorie.id === productData.categorie.id && 
               p.id !== productData.id
           )
@@ -53,8 +55,9 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
   }, [slug]);
 
   const handleAddToCart = () => {
-    // This would be implemented in Phase 3 with actual cart functionality
-    toast.success(`${quantity} ${product?.nom} ajouté au panier`);
+    if (product) {
+      addToCart(product.id, quantity);
+    }
   };
 
   const incrementQuantity = () => {

@@ -5,11 +5,13 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, ShoppingCart, Menu, X, User, LogOut } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useCart } from "../context/CartContext";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const { user, isAuthenticated, logoutUser } = useAuth();
+  const { cart } = useCart();
 
   return (
     <header className="bg-white shadow-sm">
@@ -46,9 +48,15 @@ const Navbar = () => {
             </button>
             <Link href="/panier" className="p-2 text-gray-700 hover:text-primary transition-colors relative">
               <ShoppingCart size={20} />
-              <span className="absolute -top-1 -right-1 bg-secondary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                0
-              </span>
+              {cart && cart.nombre_articles > 0 && (
+                <motion.span 
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute -top-1 -right-1 bg-secondary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center"
+                >
+                  {cart.nombre_articles}
+                </motion.span>
+              )}
             </Link>
 
             {/* User Authentication */}

@@ -39,4 +39,27 @@ export interface Cart {
   montant_total: number;
   nombre_articles: number;
   date_creation: string;
+}
+
+export interface OrderDetail {
+  id: number;
+  produit: Product;
+  prix: string;
+  quantite: number;
+  montant_total: number;
+}
+
+export interface Order {
+  id: number;
+  client: number | null;
+  nom_complet: string;
+  email: string;
+  telephone: string;
+  adresse: string;
+  ville: string;
+  statut: 'en_attente' | 'confirmee' | 'en_cours' | 'livree' | 'annulee';
+  notes: string;
+  montant_total: string;
+  details: OrderDetail[];
+  date_creation: string;
 } 

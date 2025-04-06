@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { fetchProducts, fetchCategories } from "../services/api";
-import ProductCard from "../components/ProductCard";
-import { Product, Category } from "../types";
+import { fetchProducts, fetchCategories } from "../../services/api";
+import ProductCard from "../../components/ProductCard";
+import { Product, Category } from "../../types";
 import { Search, Filter, X } from "lucide-react";
 
 export default function CataloguePage() {
@@ -29,7 +29,7 @@ export default function CataloguePage() {
         setCategories(categoriesData);
 
         // Set max price range based on product data
-        const maxPrice = Math.max(...productsData.map(p => Number(p.prix)));
+        const maxPrice = Math.max(...productsData.map((p: Product) => Number(p.prix)));
         setPriceRange([0, Math.ceil(maxPrice)]);
       } catch (error) {
         console.error("Error loading data:", error);
@@ -83,7 +83,7 @@ export default function CataloguePage() {
   const handleReset = () => {
     setSearchQuery("");
     setSelectedCategory(null);
-    setPriceRange([0, Math.max(...products.map(p => Number(p.prix)))]);
+    setPriceRange([0, Math.max(...products.map((p: Product) => Number(p.prix)))]);
   };
 
   return (
@@ -177,7 +177,7 @@ export default function CataloguePage() {
                     type="range"
                     id="min-price"
                     min={0}
-                    max={Math.max(...products.map(p => Number(p.prix)))}
+                    max={Math.max(...products.map((p: Product) => Number(p.prix)))}
                     value={priceRange[0]}
                     onChange={(e) => handlePriceChange(e, 0)}
                     className="w-full"
@@ -195,7 +195,7 @@ export default function CataloguePage() {
                     type="range"
                     id="max-price"
                     min={0}
-                    max={Math.max(...products.map(p => Number(p.prix)))}
+                    max={Math.max(...products.map((p: Product) => Number(p.prix)))}
                     value={priceRange[1]}
                     onChange={(e) => handlePriceChange(e, 1)}
                     className="w-full"

@@ -1,5 +1,5 @@
-import { fetchCategories } from "../services/api";
-import CategoryCard from "../components/CategoryCard";
+import { fetchCategories } from "../../services/api";
+import CategoryCard from "../../components/CategoryCard";
 import { motion } from "framer-motion";
 
 export default async function CategoriesPage() {

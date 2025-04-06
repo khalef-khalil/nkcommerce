@@ -101,7 +101,8 @@ export const addToCart = async (productId: number, quantity: number) => {
 };
 
 export const updateCartItem = async (itemId: number, quantity: number) => {
-  const response = await apiClient.put(`/orders/panier/articles/${itemId}/`, {
+  const response = await apiClient.post('/orders/panier/modifier_quantite/', {
+    article_id: itemId,
     quantite: quantity
   });
   return response.data;

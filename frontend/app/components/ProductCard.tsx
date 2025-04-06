@@ -5,50 +5,48 @@ import Link from "next/link";
 import Image from "next/image";
 import { ShoppingCart } from "lucide-react";
 import { Product } from "../types";
+import { useCart } from "../context/CartContext";
 
 interface ProductCardProps {
   product: Product;
 }
 
 const ProductCard = ({ product }: ProductCardProps) => {
-  // Temp placeholder image while we don't have real images
-  const imageUrl = product.image_principale || "/images/placeholder-perfume.jpg";
+  const { addToCart } = useCart();
+  
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent navigation to product page
+    addToCart(product.id, 1);
+  };
 
   return (
-    <motion.div
+    <motion.div 
       whileHover={{ y: -5 }}
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
       transition={{ duration: 0.3 }}
-      className="card"
+      className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow"
     >
-      <Link href={`/produit/${product.slug}`} className="block h-full">
-        <div className="relative h-64 bg-gray-100">
+      <Link href={`/produit/${product.slug}`}>
+        <div className="relative aspect-[4/3] bg-gray-100">
           {product.image_principale ? (
             <Image
-              src={imageUrl}
+              src={product.image_principale}
               alt={product.nom}
               fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className="object-cover"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
             />
           ) : (
-            <div className="flex items-center justify-center h-full bg-gray-100">
-              <span className="text-gray-400 text-4xl">NK</span>
+            <div className="flex items-center justify-center h-full text-gray-400">
+              <span>Image non disponible</span>
             </div>
           )}
-          {product.stock <= 5 && product.stock > 0 && (
-            <div className="absolute top-2 right-2 bg-amber-500 text-white text-xs px-2 py-1 rounded">
-              Stock limité
-            </div>
-          )}
-          {product.stock === 0 && (
-            <div className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded">
-              Indisponible
+          {!product.disponible && (
+            <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
+              <span className="text-white font-semibold px-3 py-1 rounded">Non disponible</span>
             </div>
           )}
         </div>
+        
         <div className="p-4">
           <div className="text-sm text-gray-500 mb-1">{product.marque}</div>
           <h3 className="font-semibold text-lg mb-2 line-clamp-1">{product.nom}</h3>
@@ -57,13 +55,15 @@ const ProductCard = ({ product }: ProductCardProps) => {
             <span className="text-sm text-gray-500">{product.volume}</span>
           </div>
           <div className="mt-4">
-            <button 
+            <motion.button 
               className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-secondary text-white rounded-md hover:bg-secondary/90 transition-colors"
               disabled={!product.disponible}
+              onClick={handleAddToCart}
+              whileTap={{ scale: 0.95 }}
             >
               <ShoppingCart size={16} /> 
               <span>Ajouter au panier</span>
-            </button>
+            </motion.button>
           </div>
         </div>
       </Link>
