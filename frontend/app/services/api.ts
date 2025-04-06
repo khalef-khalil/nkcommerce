@@ -8,6 +8,8 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  // Enable withCredentials to allow cookies to be sent and received
+  withCredentials: true
 });
 
 // Add request interceptor to inject token for authorized requests
@@ -109,7 +111,14 @@ export const updateCartItem = async (itemId: number, quantity: number) => {
 };
 
 export const removeCartItem = async (itemId: number) => {
-  const response = await apiClient.delete(`/orders/panier/articles/${itemId}/`);
+  const response = await apiClient.post('/orders/panier/supprimer_article/', {
+    article_id: itemId
+  });
+  return response.data;
+};
+
+export const clearCartItems = async () => {
+  const response = await apiClient.post('/orders/panier/vider/');
   return response.data;
 };
 

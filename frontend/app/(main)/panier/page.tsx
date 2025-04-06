@@ -4,12 +4,12 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../../context/CartContext';
 import CartItem from '../../components/CartItem';
-import { ShoppingCart, ArrowRight } from 'lucide-react';
+import { ShoppingCart, ArrowRight, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
 const CartPage = () => {
-  const { cart, isLoading } = useCart();
+  const { cart, isLoading, clearCartItems } = useCart();
 
   if (isLoading) {
     return (
@@ -56,13 +56,27 @@ const CartPage = () => {
 
   return (
     <div className="container-custom py-12">
-      <motion.h1 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-3xl font-bold mb-8 text-gray-800"
-      >
-        Votre Panier
-      </motion.h1>
+      <div className="flex justify-between items-center mb-8">
+        <motion.h1 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-3xl font-bold text-gray-800"
+        >
+          Votre Panier
+        </motion.h1>
+        
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={clearCartItems}
+          className="flex items-center gap-2 px-4 py-2 text-red-600 border border-red-600 rounded-md hover:bg-red-50"
+        >
+          <Trash2 size={16} />
+          Vider le panier
+        </motion.button>
+      </div>
 
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Cart Items */}

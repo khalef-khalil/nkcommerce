@@ -5,7 +5,8 @@ import {
   fetchCart, 
   addToCart as apiAddToCart,
   updateCartItem as apiUpdateCartItem,
-  removeCartItem as apiRemoveCartItem 
+  removeCartItem as apiRemoveCartItem,
+  clearCartItems as apiClearCartItems
 } from '../services/api';
 import { Cart, CartItem, Product } from '../types';
 import { toast } from 'react-hot-toast';
@@ -17,6 +18,7 @@ interface CartContextType {
   addToCart: (productId: number, quantity: number) => Promise<void>;
   updateCartItem: (itemId: number, quantity: number) => Promise<void>;
   removeCartItem: (itemId: number) => Promise<void>;
+  clearCartItems: () => Promise<void>;
   clearCart: () => void;
   refreshCart: () => Promise<void>;
 }
@@ -86,6 +88,21 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const clearCartItems = async () => {
+    try {
+      setIsLoading(true);
+      const updatedCart = await apiClearCartItems();
+      setCart(updatedCart);
+      toast.success("Panier vidé");
+    } catch (error) {
+      console.error('Failed to clear cart:', error);
+      toast.error("Impossible de vider le panier");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Used to clear the cart state locally (not on the server)
   const clearCart = () => {
     setCart(null);
   };
@@ -98,6 +115,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         addToCart,
         updateCartItem,
         removeCartItem,
+        clearCartItems,
         clearCart,
         refreshCart
       }}
