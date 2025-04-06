@@ -3,23 +3,30 @@ import type { NextRequest } from 'next/server';
 
 // List of protected paths that require authentication
 const protectedPaths = ['/profil', '/commandes'];
-const adminPaths = ['/admin/tableau-de-bord'];
+const adminProtectedPaths = ['/admin/tableau-de-bord', '/admin/produits', '/admin/commandes', '/admin/statistiques'];
+const adminPublicPaths = ['/admin/connexion', '/admin/deconnexion'];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  
+  // Redirect old admin URLs (with parentheses) to new ones
+  if (pathname.startsWith('/(admin)')) {
+    const newPath = pathname.replace('/(admin)', '/admin');
+    return NextResponse.redirect(new URL(newPath, request.url));
+  }
   
   // Handle admin routes
   if (pathname.startsWith('/admin')) {
     const adminToken = request.cookies.get('admin_token')?.value;
     
     // Admin trying to access protected admin routes without a token
-    if (adminPaths.some(path => pathname.startsWith(path)) && !adminToken) {
-      const url = new URL('/admin/connexion-admin', request.url);
+    if (!adminPublicPaths.includes(pathname) && !adminToken) {
+      const url = new URL('/admin/connexion', request.url);
       return NextResponse.redirect(url);
     }
     
     // If admin is authenticated and trying to access login page, redirect to dashboard
-    if (pathname === '/admin/connexion-admin' && adminToken) {
+    if (pathname === '/admin/connexion' && adminToken) {
       return NextResponse.redirect(new URL('/admin/tableau-de-bord', request.url));
     }
     
@@ -52,5 +59,6 @@ export const config = {
     '/connexion',
     '/inscription',
     '/admin/:path*',
+    '/(admin)/:path*',
   ],
 }; 

@@ -14,7 +14,7 @@ import {
   ImageIcon,
   ArrowUpDownIcon
 } from 'lucide-react';
-import { fetchProducts, fetchCategories, adminDeleteProduct } from '../../../services/api';
+import { fetchProducts, fetchCategories, adminDeleteProduct } from '../../services/api';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 
@@ -171,7 +171,7 @@ export default function ProductsPage() {
           transition={{ delay: 0.1 }}
         >
           <Link 
-            href="/admin/tableau-de-bord/produits/nouveau"
+            href="/admin/produits/nouveau"
             className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
           >
             <PlusIcon className="w-5 h-5 mr-2" />
@@ -322,7 +322,7 @@ export default function ProductsPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-2">
                         <Link
-                          href={`/admin/tableau-de-bord/produits/${product.slug}/modifier`}
+                          href={`/admin/produits/${product.slug}/modifier`}
                           className="text-indigo-600 hover:text-indigo-900 p-1.5 rounded-full hover:bg-indigo-50"
                         >
                           <PencilIcon className="h-5 w-5" />

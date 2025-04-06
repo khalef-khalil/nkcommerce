@@ -1,16 +1,16 @@
 "use client";
 
 import React from 'react';
-import { useAdminAuth } from '../../context/AdminAuthContext';
-import AdminSidebar from '../../components/admin/Sidebar';
-import AdminHeader from '../../components/admin/Header';
+import { AdminAuthProvider } from '../context/AdminAuthContext';
+import { useAdminAuth } from '../context/AdminAuthContext';
+import AdminSidebar from '../components/admin/Sidebar';
+import AdminHeader from '../components/admin/Header';
 import { Loader2 } from 'lucide-react';
+import { Toaster } from 'react-hot-toast';
+import { usePathname } from 'next/navigation';
+import '../globals.css';
 
-export default function AdminDashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function AdminDashboardWrapper({ children }: { children: React.ReactNode }) {
   const { isLoading, isAuthenticated } = useAdminAuth();
 
   // Show loading state
@@ -51,5 +51,33 @@ export default function AdminDashboardLayout({
         </main>
       </div>
     </div>
+  );
+}
+
+export default function AdminRootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const pathname = usePathname();
+  
+  // Special case for login or unauthorized routes
+  const isAuthRoute = pathname === '/admin/connexion' || pathname === '/admin/deconnexion';
+
+  return (
+    <html lang="fr">
+      <body>
+        <AdminAuthProvider>
+          <Toaster position="top-right" />
+          {isAuthRoute ? (
+            <div className="min-h-screen bg-gray-100">
+              {children}
+            </div>
+          ) : (
+            <AdminDashboardWrapper>{children}</AdminDashboardWrapper>
+          )}
+        </AdminAuthProvider>
+      </body>
+    </html>
   );
 } 

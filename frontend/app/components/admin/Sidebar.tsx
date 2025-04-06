@@ -14,17 +14,17 @@ const navItems = [
     icon: <LayoutDashboardIcon className="h-5 w-5" />,
   },
   {
-    path: "/admin/tableau-de-bord/produits",
+    path: "/admin/produits",
     name: "Produits",
     icon: <PackageIcon className="h-5 w-5" />,
   },
   {
-    path: "/admin/tableau-de-bord/commandes",
+    path: "/admin/commandes",
     name: "Commandes",
     icon: <ShoppingBagIcon className="h-5 w-5" />,
   },
   {
-    path: "/admin/tableau-de-bord/statistiques",
+    path: "/admin/statistiques",
     name: "Statistiques",
     icon: <BarChart3Icon className="h-5 w-5" />,
   },

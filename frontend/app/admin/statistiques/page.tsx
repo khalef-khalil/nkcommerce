@@ -18,7 +18,7 @@ import {
   fetchOrderStats, 
   fetchSalesStats, 
   fetchUserStats 
-} from '../../../services/api';
+} from '../../services/api';
 
 // Types for statistics
 type OrderStats = {

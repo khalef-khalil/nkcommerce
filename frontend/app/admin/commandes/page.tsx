@@ -13,7 +13,7 @@ import {
   CalendarIcon,
   CircleDollarSignIcon
 } from 'lucide-react';
-import { adminFetchAllOrders, adminConfirmOrder } from '../../../services/api';
+import { adminFetchAllOrders, adminConfirmOrder } from '../../services/api';
 import toast from 'react-hot-toast';
 
 // Type definitions

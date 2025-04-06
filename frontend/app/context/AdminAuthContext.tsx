@@ -153,7 +153,7 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
     setToken(null);
     setAdmin(null);
     toast.success('Déconnexion réussie');
-    router.push('/admin/connexion-admin');
+    router.push('/admin/connexion');
   };
 
   return (
