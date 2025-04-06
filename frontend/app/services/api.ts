@@ -15,6 +15,16 @@ const apiClient = axios.create({
 // Add request interceptor to inject token for authorized requests
 apiClient.interceptors.request.use(
   (config) => {
+    // Check for admin token first for admin routes
+    if (config.url?.includes('/admin/') || config.url?.includes('/orders/stats/')) {
+      const adminToken = Cookies.get('admin_token');
+      if (adminToken) {
+        config.headers['Authorization'] = `Token ${adminToken}`;
+        return config;
+      }
+    }
+    
+    // Use regular user token for other routes
     const token = Cookies.get('token');
     if (token) {
       config.headers['Authorization'] = `Token ${token}`;
@@ -134,6 +144,51 @@ export const fetchOrders = async () => {
 
 export const fetchOrderById = async (orderId: number) => {
   const response = await apiClient.get(`/orders/commandes/${orderId}/`);
+  return response.data;
+};
+
+// ADMIN API FUNCTIONS
+
+// Admin Products Management
+export const adminCreateProduct = async (productData: any) => {
+  const response = await apiClient.post('/products/', productData);
+  return response.data;
+};
+
+export const adminUpdateProduct = async (slug: string, productData: any) => {
+  const response = await apiClient.patch(`/products/${slug}/`, productData);
+  return response.data;
+};
+
+export const adminDeleteProduct = async (slug: string) => {
+  const response = await apiClient.delete(`/products/${slug}/`);
+  return response.data;
+};
+
+// Admin Orders Management
+export const adminFetchAllOrders = async () => {
+  const response = await apiClient.get('/orders/admin/commandes/');
+  return response.data;
+};
+
+export const adminConfirmOrder = async (orderId: number) => {
+  const response = await apiClient.post(`/orders/commandes/${orderId}/confirm/`);
+  return response.data;
+};
+
+// Admin Statistics 
+export const fetchOrderStats = async () => {
+  const response = await apiClient.get('/orders/stats/orders/');
+  return response.data;
+};
+
+export const fetchSalesStats = async () => {
+  const response = await apiClient.get('/orders/stats/sales/');
+  return response.data;
+};
+
+export const fetchUserStats = async () => {
+  const response = await apiClient.get('/orders/stats/users/');
   return response.data;
 };
 
