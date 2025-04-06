@@ -1,0 +1,1 @@
+fantastic, now that we have a fresh next project, implement phase 1 detailed in the phases file ( Structure de Base et Catalogue Produits ). i want a modern and intuitive design with framer animations.
