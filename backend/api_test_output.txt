@@ -1,0 +1,157 @@
+
+=== Tests des produits ===
+
+Test 1: Vérifier que le serveur est accessible
+Exécution: curl -s http://localhost:8000/api/products/
+Réponse: [{"id":2,"nom":"Parfum Élégance","slug":"parfum-elegance","categorie":{"id":1,"nom":"Parfums Homme","slug":"parfums-homme","description":"Collection de parfums pour homme","image":null,"date_creation":"2025-04-06T15:12:59.813694Z"},"description":"Un parfum frais et élégant pour toutes occasions","prix":"39.99","stock":11,"disponible":true,"image_principale":null,"images":[],"marque":"Luxe Parfums","volume":"50ml","date_creation":"2025-04-06T15:13:41.255045Z"},{"id":1,"nom":"Parfum Royal","slug":"parfum-royal","categorie":{"id":1,"nom":"Parfums Homme","slug":"parfums-homme","description":"Collection de parfums pour homme","image":null,"date_creation":"2025-04-06T15:12:59.813694Z"},"description":"Un parfum élégant avec des notes boisées","prix":"49.99","stock":97,"disponible":true,"image_principale":null,"images":[],"marque":"Luxe Parfums","volume":"100ml","date_creation":"2025-04-06T15:13:34.255081Z"}]
+
+Test 2: Lister les catégories
+Exécution: curl -s http://localhost:8000/api/products/categories/
+Réponse: [{"id":1,"nom":"Parfums Homme","slug":"parfums-homme","description":"Collection de parfums pour homme","image":null,"date_creation":"2025-04-06T15:12:59.813694Z"}]
+
+Test 3: Lister les produits
+Exécution: curl -s http://localhost:8000/api/products/
+Réponse: [{"id":2,"nom":"Parfum Élégance","slug":"parfum-elegance","categorie":{"id":1,"nom":"Parfums Homme","slug":"parfums-homme","description":"Collection de parfums pour homme","image":null,"date_creation":"2025-04-06T15:12:59.813694Z"},"description":"Un parfum frais et élégant pour toutes occasions","prix":"39.99","stock":11,"disponible":true,"image_principale":null,"images":[],"marque":"Luxe Parfums","volume":"50ml","date_creation":"2025-04-06T15:13:41.255045Z"},{"id":1,"nom":"Parfum Royal","slug":"parfum-royal","categorie":{"id":1,"nom":"Parfums Homme","slug":"parfums-homme","description":"Collection de parfums pour homme","image":null,"date_creation":"2025-04-06T15:12:59.813694Z"},"description":"Un parfum élégant avec des notes boisées","prix":"49.99","stock":97,"disponible":true,"image_principale":null,"images":[],"marque":"Luxe Parfums","volume":"100ml","date_creation":"2025-04-06T15:13:34.255081Z"}]
+Produit existant trouvé avec l'ID: 2
+
+=== Tests d'authentification ===
+
+Test 4: Inscription utilisateur via public/register
+Exécution: curl -s -X POST http://localhost:8000/api/users/public/register/ -H 'Content-Type: application/json' -d '{"username":"testuser_1743953626", "email":"testuser_1743953626@example.com", "password":"testpass123"}'
+Réponse: {"id": 18, "username": "testuser_1743953626", "email": "testuser_1743953626@example.com", "first_name": "", "last_name": "", "token": "2545b2963e25f2ebb6c5539aec5954cba0345f8a"}
+Token obtenu dans la réponse d'inscription: 2545b2963e...
+
+Test 5: Accéder au profil utilisateur avec token
+Exécution: curl -s http://localhost:8000/api/users/me/ -H "Authorization: Token 2545b2963e25f2ebb6c5539aec5954cba0345f8a"
+Réponse: {"id":18,"username":"testuser_1743953626","email":"testuser_1743953626@example.com","first_name":"","last_name":"","profil":{"telephone":"","adresse":"","ville":"","photo":null}}
+
+=== Tests du panier utilisateur authentifié ===
+
+Test 6: Voir le panier (utilisateur authentifié)
+Exécution: curl -s http://localhost:8000/api/orders/panier/ -H "Authorization: Token 2545b2963e25f2ebb6c5539aec5954cba0345f8a"
+Réponse: {"id":25,"client":18,"articles":[],"montant_total":0,"nombre_articles":0,"date_creation":"2025-04-06T15:33:46.403152Z"}
+
+Test 7: Ajouter un produit au panier
+Exécution: curl -s -X POST http://localhost:8000/api/orders/panier/ajouter_produit/ -H "Authorization: Token 2545b2963e25f2ebb6c5539aec5954cba0345f8a" -H 'Content-Type: application/json' -d '{"produit_id":2, "quantite":2}'
+Réponse: {"id":25,"client":18,"articles":[{"id":24,"produit":{"id":2,"nom":"Parfum Élégance","slug":"parfum-elegance","categorie":{"id":1,"nom":"Parfums Homme","slug":"parfums-homme","description":"Collection de parfums pour homme","image":null,"date_creation":"2025-04-06T15:12:59.813694Z"},"description":"Un parfum frais et élégant pour toutes occasions","prix":"39.99","stock":11,"disponible":true,"image_principale":null,"images":[],"marque":"Luxe Parfums","volume":"50ml","date_creation":"2025-04-06T15:13:41.255045Z"},"quantite":2,"montant_total":79.98,"date_ajout":"2025-04-06T15:33:46.438217Z"}],"montant_total":79.98,"nombre_articles":2,"date_creation":"2025-04-06T15:33:46.403152Z"}
+Article ajouté au panier avec l'ID: 1
+
+Test 8: Modifier la quantité d'un article du panier
+Exécution: curl -s -X POST http://localhost:8000/api/orders/panier/modifier_quantite/ -H "Authorization: Token 2545b2963e25f2ebb6c5539aec5954cba0345f8a" -H 'Content-Type: application/json' -d '{"article_id":1, "quantite":3}'
+Réponse: {"detail":"Article non trouvé"}
+
+Test 9: Créer une commande à partir du panier
+Exécution: curl -s -X POST http://localhost:8000/api/orders/panier/convertir_en_commande/ -H "Authorization: Token 2545b2963e25f2ebb6c5539aec5954cba0345f8a" -H 'Content-Type: application/json' -d '{"nom_complet":"Test User", "email":"testuser_1743953626@example.com", "telephone":"123456789", "adresse":"123 Test Street", "ville":"Test City", "notes":"Test order"}'
+Réponse: {"id_commande":24}
+Commande créée avec l'ID: 24
+
+Test 10: Voir la liste des commandes
+Exécution: curl -s http://localhost:8000/api/orders/commandes/ -H "Authorization: Token 2545b2963e25f2ebb6c5539aec5954cba0345f8a"
+Réponse: [{"id":24,"client":18,"nom_complet":"Test User","email":"testuser_1743953626@example.com","telephone":"123456789","adresse":"123 Test Street","ville":"Test City","statut":"en_attente","notes":"Test order","montant_total":"79.98","details":[{"id":24,"produit":{"id":2,"nom":"Parfum Élégance","slug":"parfum-elegance","categorie":{"id":1,"nom":"Parfums Homme","slug":"parfums-homme","description":"Collection de parfums pour homme","image":null,"date_creation":"2025-04-06T15:12:59.813694Z"},"description":"Un parfum frais et élégant pour toutes occasions","prix":"39.99","stock":9,"disponible":true,"image_principale":null,"images":[],"marque":"Luxe Parfums","volume":"50ml","date_creation":"2025-04-06T15:13:41.255045Z"},"prix":"39.99","quantite":2,"montant_total":79.98}],"date_creation":"2025-04-06T15:33:46.462865Z"}]
+
+Test 11: Voir le détail d'une commande
+Exécution: curl -s http://localhost:8000/api/orders/commandes/24/ -H "Authorization: Token 2545b2963e25f2ebb6c5539aec5954cba0345f8a"
+Réponse: {"id":24,"client":18,"nom_complet":"Test User","email":"testuser_1743953626@example.com","telephone":"123456789","adresse":"123 Test Street","ville":"Test City","statut":"en_attente","notes":"Test order","montant_total":"79.98","details":[{"id":24,"produit":{"id":2,"nom":"Parfum Élégance","slug":"parfum-elegance","categorie":{"id":1,"nom":"Parfums Homme","slug":"parfums-homme","description":"Collection de parfums pour homme","image":null,"date_creation":"2025-04-06T15:12:59.813694Z"},"description":"Un parfum frais et élégant pour toutes occasions","prix":"39.99","stock":9,"disponible":true,"image_principale":null,"images":[],"marque":"Luxe Parfums","volume":"50ml","date_creation":"2025-04-06T15:13:41.255045Z"},"prix":"39.99","quantite":2,"montant_total":79.98}],"date_creation":"2025-04-06T15:33:46.462865Z"}
+
+Test 12: Confirmer une commande
+Exécution: curl -s -X POST http://localhost:8000/api/orders/commandes/24/confirm/ -H "Authorization: Token 2545b2963e25f2ebb6c5539aec5954cba0345f8a"
+Réponse: {"detail":"Vous n'avez pas la permission d'effectuer cette action."}
+
+=== Tests du panier anonyme ===
+
+Test 13: Voir le panier (anonyme)
+Exécution: curl -s http://localhost:8000/api/orders/panier/ -b api_test_cookie.txt -c api_test_cookie.txt
+Réponse: {"id":26,"client":null,"articles":[],"montant_total":0,"nombre_articles":0,"date_creation":"2025-04-06T15:33:46.506052Z"}
+
+Test 14: Ajouter un produit au panier anonyme
+Exécution: curl -s -X POST http://localhost:8000/api/orders/panier/ajouter_produit/ -H 'Content-Type: application/json' -d '{"produit_id":2, "quantite":1}' -b api_test_cookie.txt -c api_test_cookie.txt
+Réponse: {"id":26,"client":null,"articles":[{"id":25,"produit":{"id":2,"nom":"Parfum Élégance","slug":"parfum-elegance","categorie":{"id":1,"nom":"Parfums Homme","slug":"parfums-homme","description":"Collection de parfums pour homme","image":null,"date_creation":"2025-04-06T15:12:59.813694Z"},"description":"Un parfum frais et élégant pour toutes occasions","prix":"39.99","stock":9,"disponible":true,"image_principale":null,"images":[],"marque":"Luxe Parfums","volume":"50ml","date_creation":"2025-04-06T15:13:41.255045Z"},"quantite":1,"montant_total":39.99,"date_ajout":"2025-04-06T15:33:46.517666Z"}],"montant_total":39.99,"nombre_articles":1,"date_creation":"2025-04-06T15:33:46.506052Z"}
+Article ajouté au panier anonyme avec l'ID: 1
+
+Test 15: Créer une commande anonyme
+Exécution: curl -s -X POST http://localhost:8000/api/orders/panier/convertir_en_commande/ -H 'Content-Type: application/json' -d '{"nom_complet":"Guest User", "email":"guest_1743953626@example.com", "telephone":"987654321", "adresse":"456 Guest Street", "ville":"Guest City", "notes":"Guest order"}' -b api_test_cookie.txt -c api_test_cookie.txt
+Réponse: {"id_commande":25}
+Commande anonyme créée avec l'ID: 25
+
+=== Création d'un compte admin pour les tests ===
+
+Test 16: Création d'un super utilisateur admin
+Exécution: pipenv run python create_admin.py
+Réponse: Admin existe déjà, token: 4c54a2cc5589cf4942bd31883254123460537dff
+TOKEN:4c54a2cc5589cf4942bd31883254123460537dff
+Token admin obtenu: 4c54a2cc55...
+
+=== Tests des statistiques avec utilisateur normal ===
+
+Test 17: Statistiques des commandes avec utilisateur normal
+Exécution: curl -s http://localhost:8000/api/orders/stats/orders/ -H "Authorization: Token 2545b2963e25f2ebb6c5539aec5954cba0345f8a"
+Réponse: {"detail":"Vous n'avez pas la permission d'effectuer cette action."}
+
+Test 18: Statistiques des ventes avec utilisateur normal
+Exécution: curl -s http://localhost:8000/api/orders/stats/sales/ -H "Authorization: Token 2545b2963e25f2ebb6c5539aec5954cba0345f8a"
+Réponse: {"detail":"Vous n'avez pas la permission d'effectuer cette action."}
+
+Test 19: Statistiques des utilisateurs avec utilisateur normal
+Exécution: curl -s http://localhost:8000/api/orders/stats/users/ -H "Authorization: Token 2545b2963e25f2ebb6c5539aec5954cba0345f8a"
+Réponse: {"detail":"Vous n'avez pas la permission d'effectuer cette action."}
+
+=== Tests des statistiques avec admin ===
+
+Test 20: Statistiques des commandes avec admin
+Exécution: curl -s http://localhost:8000/api/orders/stats/orders/ -H "Authorization: Token 4c54a2cc5589cf4942bd31883254123460537dff"
+Réponse: {"total_orders":25,"pending_orders":19,"confirmed_orders":6,"status_distribution":[{"statut":"confirmee","count":6},{"statut":"en_attente","count":19}],"recent_orders":25}
+
+Test 21: Statistiques des ventes avec admin
+Exécution: curl -s http://localhost:8000/api/orders/stats/sales/ -H "Authorization: Token 4c54a2cc5589cf4942bd31883254123460537dff"
+Réponse: {"total_sales":{"total":1829.55},"recent_sales":{"total":1829.55},"average_order_value":{"avg":73.182},"top_products":[{"produit__id":2,"produit__nom":"Parfum Élégance","total_quantity":42,"total_sales":1679.58},{"produit__id":1,"produit__nom":"Parfum Royal","total_quantity":3,"total_sales":149.97}]}
+
+Test 22: Statistiques des utilisateurs avec admin
+Exécution: curl -s http://localhost:8000/api/orders/stats/users/ -H "Authorization: Token 4c54a2cc5589cf4942bd31883254123460537dff"
+Réponse: {"total_customers":13,"repeat_customers":2,"new_customers":13,"top_customers":[{"client__username":"admin_user","nom_complet":"Admin Test","email":"admin@example.com","order_count":2,"total_spent":219.95},{"client__username":"testuser_1743952586","nom_complet":"Test User","email":"testuser_1743952586@example.com","order_count":1,"total_spent":119.97},{"client__username":"testuser_1743952761","nom_complet":"Test User","email":"testuser_1743952761@example.com","order_count":1,"total_spent":119.97},{"client__username":"testuser_1743953071","nom_complet":"Test User","email":"testuser_1743953071@example.com","order_count":1,"total_spent":119.97},{"client__username":"testuser_1743953100","nom_complet":"Test User","email":"testuser_1743953100@example.com","order_count":1,"total_spent":119.97}]}
+
+=== Tests CRUD produits avec admin ===
+
+Test 23: Créer un produit avec admin
+Exécution: curl -s -X POST http://localhost:8000/api/products/ -H "Authorization: Token 4c54a2cc5589cf4942bd31883254123460537dff" -H 'Content-Type: application/json' -d '{
+        "nom": "Parfum Exclusive Admin Test 1743953627", 
+        "slug": "parfum-exclusive-admin-test-1743953627",
+        "categorie_id": 1, 
+        "description": "Un parfum exclusif créé lors des tests", 
+        "prix": 79.99, 
+        "stock": 50, 
+        "disponible": true, 
+        "marque": "Luxe Test", 
+        "volume": "75ml"
+    }'
+Réponse: {"id":3,"nom":"Parfum Exclusive Admin Test 1743953627","slug":"parfum-exclusive-admin-test-1743953627","categorie":{"id":1,"nom":"Parfums Homme","slug":"parfums-homme","description":"Collection de parfums pour homme","image":null,"date_creation":"2025-04-06T15:12:59.813694Z"},"description":"Un parfum exclusif créé lors des tests","prix":"79.99","stock":50,"disponible":true,"image_principale":null,"images":[],"marque":"Luxe Test","volume":"75ml","date_creation":"2025-04-06T15:33:47.153192Z"}
+Nouveau produit créé avec l'ID: 3
+
+Test 24: Voir les détails du produit créé
+Exécution: curl -s http://localhost:8000/api/products/parfum-exclusive-admin-test-1743953627/ -H "Authorization: Token 4c54a2cc5589cf4942bd31883254123460537dff"
+Réponse: {"id":3,"nom":"Parfum Exclusive Admin Test 1743953627","slug":"parfum-exclusive-admin-test-1743953627","categorie":{"id":1,"nom":"Parfums Homme","slug":"parfums-homme","description":"Collection de parfums pour homme","image":null,"date_creation":"2025-04-06T15:12:59.813694Z"},"description":"Un parfum exclusif créé lors des tests","prix":"79.99","stock":50,"disponible":true,"image_principale":null,"images":[],"marque":"Luxe Test","volume":"75ml","date_creation":"2025-04-06T15:33:47.153192Z","date_modification":"2025-04-06T15:33:47.153204Z"}
+
+Test 25: Modifier un produit avec admin
+Exécution: curl -s -X PATCH http://localhost:8000/api/products/parfum-exclusive-admin-test-1743953627/ -H "Authorization: Token 4c54a2cc5589cf4942bd31883254123460537dff" -H 'Content-Type: application/json' -d '{
+            "prix": 89.99,
+            "stock": 45,
+            "description": "Un parfum exclusif modifié lors des tests"
+        }'
+Réponse: {"id":3,"nom":"Parfum Exclusive Admin Test 1743953627","slug":"parfum-exclusive-admin-test-1743953627","categorie":{"id":1,"nom":"Parfums Homme","slug":"parfums-homme","description":"Collection de parfums pour homme","image":null,"date_creation":"2025-04-06T15:12:59.813694Z"},"description":"Un parfum exclusif modifié lors des tests","prix":"89.99","stock":45,"disponible":true,"image_principale":null,"images":[],"marque":"Luxe Test","volume":"75ml","date_creation":"2025-04-06T15:33:47.153192Z"}
+
+Test 26: Vérifier les modifications du produit
+Exécution: curl -s http://localhost:8000/api/products/parfum-exclusive-admin-test-1743953627/ -H "Authorization: Token 4c54a2cc5589cf4942bd31883254123460537dff"
+Réponse: {"id":3,"nom":"Parfum Exclusive Admin Test 1743953627","slug":"parfum-exclusive-admin-test-1743953627","categorie":{"id":1,"nom":"Parfums Homme","slug":"parfums-homme","description":"Collection de parfums pour homme","image":null,"date_creation":"2025-04-06T15:12:59.813694Z"},"description":"Un parfum exclusif modifié lors des tests","prix":"89.99","stock":45,"disponible":true,"image_principale":null,"images":[],"marque":"Luxe Test","volume":"75ml","date_creation":"2025-04-06T15:33:47.153192Z","date_modification":"2025-04-06T15:33:47.178637Z"}
+
+Test 27: Supprimer un produit avec admin
+Exécution: curl -s -X DELETE http://localhost:8000/api/products/parfum-exclusive-admin-test-1743953627/ -H "Authorization: Token 4c54a2cc5589cf4942bd31883254123460537dff"
+Réponse: 
+
+Test 28: Vérifier que le produit a été supprimé
+Exécution: curl -s http://localhost:8000/api/products/parfum-exclusive-admin-test-1743953627/ -H "Authorization: Token 4c54a2cc5589cf4942bd31883254123460537dff"
+Réponse: {"detail":"No Produit matches the given query."}
+
+=== Tests des fonctionnalités admin - Order Management ===
+
+Test 29: Confirmer une commande avec admin
+Exécution: curl -s -X POST http://localhost:8000/api/orders/commandes/25/confirm/ -H "Authorization: Token 4c54a2cc5589cf4942bd31883254123460537dff"
+Réponse: {"id":25,"client":null,"nom_complet":"Guest User","email":"guest_1743953626@example.com","telephone":"987654321","adresse":"456 Guest Street","ville":"Guest City","statut":"confirmee","notes":"Guest order","montant_total":"39.99","details":[{"id":25,"produit":{"id":2,"nom":"Parfum Élégance","slug":"parfum-elegance","categorie":{"id":1,"nom":"Parfums Homme","slug":"parfums-homme","description":"Collection de parfums pour homme","image":null,"date_creation":"2025-04-06T15:12:59.813694Z"},"description":"Un parfum frais et élégant pour toutes occasions","prix":"39.99","stock":8,"disponible":true,"image_principale":null,"images":[],"marque":"Luxe Parfums","volume":"50ml","date_creation":"2025-04-06T15:13:41.255045Z"},"prix":"39.99","quantite":1,"montant_total":39.99}],"date_creation":"2025-04-06T15:33:46.534728Z"}
