@@ -148,3 +148,39 @@ def obtain_token(request):
         content_type="application/json", 
         status=405
     )
+
+
+@api_view(['PATCH'])
+@permission_classes([permissions.IsAuthenticated])
+def update_profile(request):
+    """
+    Direct endpoint to update just the profile fields
+    """
+    user = request.user
+    
+    try:
+        # Get or create profile if it doesn't exist
+        profile, created = Profil.objects.get_or_create(user=user)
+        
+        # Update fields from request data
+        if 'telephone' in request.data:
+            profile.telephone = request.data['telephone']
+        
+        if 'adresse' in request.data:
+            profile.adresse = request.data['adresse']
+            
+        if 'ville' in request.data:
+            profile.ville = request.data['ville']
+        
+        # Save the profile
+        profile.save()
+        
+        # Return the updated user with profile
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
+    
+    except Exception as e:
+        return Response(
+            {"error": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

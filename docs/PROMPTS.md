@@ -1,1 +1,1 @@
-fantastic, now that we have a fresh next project, implement phase 1 detailed in the phases file ( Structure de Base et Catalogue Produits ). i want a modern and intuitive design with framer animations.
+scan the entire app to understand it structure, then, implement phase 2 detailed in the phases file ( Structure de Base et Catalogue Produits ). i want a modern and intuitive design with framer animations.

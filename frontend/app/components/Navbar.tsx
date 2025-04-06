@@ -2,11 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { Search, ShoppingCart, Menu, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Search, ShoppingCart, Menu, X, User, LogOut } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const { user, isAuthenticated, logoutUser } = useAuth();
 
   return (
     <header className="bg-white shadow-sm">
@@ -47,6 +50,81 @@ const Navbar = () => {
                 0
               </span>
             </Link>
+
+            {/* User Authentication */}
+            {isAuthenticated ? (
+              <div className="relative">
+                <button 
+                  aria-label="Profil utilisateur" 
+                  className="p-2 text-gray-700 hover:text-primary transition-colors relative"
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                >
+                  <motion.div
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="flex items-center"
+                  >
+                    <User size={20} />
+                    <span className="ml-2 hidden sm:inline">{user?.username}</span>
+                  </motion.div>
+                </button>
+                <AnimatePresence>
+                  {isUserMenuOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10"
+                    >
+                      <Link 
+                        href="/profil" 
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setIsUserMenuOpen(false)}
+                      >
+                        Mon profil
+                      </Link>
+                      <Link 
+                        href="/commandes" 
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setIsUserMenuOpen(false)}
+                      >
+                        Mes commandes
+                      </Link>
+                      <button 
+                        onClick={() => {
+                          setIsUserMenuOpen(false);
+                          logoutUser();
+                        }}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        <div className="flex items-center">
+                          <LogOut size={16} className="mr-2" />
+                          Déconnexion
+                        </div>
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <div className="hidden sm:flex items-center space-x-2">
+                <Link 
+                  href="/connexion"
+                  className="text-gray-700 hover:text-primary transition-colors"
+                >
+                  Connexion
+                </Link>
+                <span className="text-gray-400">|</span>
+                <Link 
+                  href="/inscription"
+                  className="text-gray-700 hover:text-primary transition-colors"
+                >
+                  Inscription
+                </Link>
+              </div>
+            )}
+            
             <button 
               aria-label={isMenuOpen ? "Fermer le menu" : "Ouvrir le menu"} 
               className="p-2 text-gray-700 md:hidden"
@@ -58,38 +136,87 @@ const Navbar = () => {
         </div>
 
         {/* Mobile Menu */}
-        {isMenuOpen && (
-          <motion.div 
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden py-4"
-          >
-            <nav className="flex flex-col space-y-4">
-              <Link 
-                href="/" 
-                className="text-gray-700 hover:text-primary transition-colors py-2 border-b border-gray-100"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Accueil
-              </Link>
-              <Link 
-                href="/catalogue" 
-                className="text-gray-700 hover:text-primary transition-colors py-2 border-b border-gray-100"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Catalogue
-              </Link>
-              <Link 
-                href="/categories" 
-                className="text-gray-700 hover:text-primary transition-colors py-2 border-b border-gray-100"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Catégories
-              </Link>
-            </nav>
-          </motion.div>
-        )}
+        <AnimatePresence>
+          {isMenuOpen && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden py-4"
+            >
+              <nav className="flex flex-col space-y-4">
+                <Link 
+                  href="/" 
+                  className="text-gray-700 hover:text-primary transition-colors py-2 border-b border-gray-100"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Accueil
+                </Link>
+                <Link 
+                  href="/catalogue" 
+                  className="text-gray-700 hover:text-primary transition-colors py-2 border-b border-gray-100"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Catalogue
+                </Link>
+                <Link 
+                  href="/categories" 
+                  className="text-gray-700 hover:text-primary transition-colors py-2 border-b border-gray-100"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Catégories
+                </Link>
+                {!isAuthenticated ? (
+                  <>
+                    <Link 
+                      href="/connexion" 
+                      className="text-gray-700 hover:text-primary transition-colors py-2 border-b border-gray-100"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Connexion
+                    </Link>
+                    <Link 
+                      href="/inscription" 
+                      className="text-gray-700 hover:text-primary transition-colors py-2 border-b border-gray-100"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Inscription
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link 
+                      href="/profil" 
+                      className="text-gray-700 hover:text-primary transition-colors py-2 border-b border-gray-100"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Mon profil
+                    </Link>
+                    <Link 
+                      href="/commandes" 
+                      className="text-gray-700 hover:text-primary transition-colors py-2 border-b border-gray-100"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Mes commandes
+                    </Link>
+                    <button 
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        logoutUser();
+                      }}
+                      className="text-left text-gray-700 hover:text-primary transition-colors py-2 border-b border-gray-100"
+                    >
+                      <div className="flex items-center">
+                        <LogOut size={16} className="mr-2" />
+                        Déconnexion
+                      </div>
+                    </button>
+                  </>
+                )}
+              </nav>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </header>
   );
