@@ -5,6 +5,7 @@ import { AdminAuthProvider } from '../context/AdminAuthContext';
 import { useAdminAuth } from '../context/AdminAuthContext';
 import AdminSidebar from '../components/admin/Sidebar';
 import AdminHeader from '../components/admin/Header';
+import MobileNav from '../components/admin/MobileNav';
 import { Loader2 } from 'lucide-react';
 import { Toaster } from 'react-hot-toast';
 import { usePathname } from 'next/navigation';
@@ -43,13 +44,20 @@ function AdminDashboardWrapper({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen bg-gray-100">
-      <AdminSidebar />
+      {/* Sidebar - hidden on mobile */}
+      <div className="hidden md:block">
+        <AdminSidebar />
+      </div>
+      
       <div className="flex-1 flex flex-col overflow-hidden">
         <AdminHeader />
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-6 pb-20 md:pb-6">
           {children}
         </main>
       </div>
+
+      {/* Mobile Navigation - shown only on mobile */}
+      <MobileNav />
     </div>
   );
 }

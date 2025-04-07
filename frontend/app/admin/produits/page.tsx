@@ -12,7 +12,12 @@ import {
   CheckIcon, 
   XIcon,
   ImageIcon,
-  ArrowUpDownIcon
+  ArrowUpDownIcon,
+  EyeIcon,
+  PackageIcon,
+  TagIcon,
+  BoxIcon,
+  InfoIcon
 } from 'lucide-react';
 import { fetchProducts, fetchCategories, adminDeleteProduct, adminCreateProduct, adminUpdateProduct } from '../../services/api';
 import { useRouter } from 'next/navigation';
@@ -32,6 +37,10 @@ type Product = {
   };
   marque: string;
   image_principale: string | null;
+  description: string;
+  volume: string;
+  date_creation: string;
+  date_modification: string;
 };
 
 type Category = {
@@ -69,6 +78,8 @@ export default function ProductsPage() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [showProductDetails, setShowProductDetails] = useState(false);
   
   const router = useRouter();
 
@@ -378,6 +389,22 @@ export default function ProductsPage() {
     return match ? match[2] : '';
   };
 
+  const viewProductDetails = (product: Product) => {
+    setSelectedProduct(product);
+    setShowProductDetails(true);
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   // Loading state
   if (isLoading) {
     return (
@@ -554,16 +581,22 @@ export default function ProductsPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end space-x-2">
+                      <div className="flex justify-end space-x-2">
+                        <button
+                          onClick={() => viewProductDetails(product)}
+                          className="text-indigo-600 hover:text-indigo-900"
+                        >
+                          <EyeIcon className="h-5 w-5" />
+                        </button>
                         <button
                           onClick={() => handleEditClick(product)}
-                          className="text-indigo-600 hover:text-indigo-900 p-1.5 rounded-full hover:bg-indigo-50"
+                          className="text-blue-600 hover:text-blue-900"
                         >
                           <PencilIcon className="h-5 w-5" />
                         </button>
                         <button
                           onClick={() => handleDeleteClick(product)}
-                          className="text-red-600 hover:text-red-900 p-1.5 rounded-full hover:bg-red-50"
+                          className="text-red-600 hover:text-red-900"
                         >
                           <Trash2Icon className="h-5 w-5" />
                         </button>
@@ -1100,6 +1133,108 @@ export default function ProductsPage() {
             </div>
           </motion.div>
         </div>
+      )}
+
+      {/* Product Details Modal */}
+      {showProductDetails && selectedProduct && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          onClick={() => setShowProductDetails(false)}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="bg-white rounded-xl shadow-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-6">
+                <h2 className="text-2xl font-bold text-gray-800">{selectedProduct.nom}</h2>
+                <button
+                  onClick={() => setShowProductDetails(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <XIcon className="h-6 w-6" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="flex items-center">
+                    <PackageIcon className="h-5 w-5 text-gray-500 mr-2" />
+                    <span className="text-gray-600">Catégorie:</span>
+                    <span className="ml-2 font-medium">{selectedProduct.categorie.nom}</span>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <TagIcon className="h-5 w-5 text-gray-500 mr-2" />
+                    <span className="text-gray-600">Marque:</span>
+                    <span className="ml-2 font-medium">{selectedProduct.marque}</span>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <BoxIcon className="h-5 w-5 text-gray-500 mr-2" />
+                    <span className="text-gray-600">Volume:</span>
+                    <span className="ml-2 font-medium">{selectedProduct.volume}</span>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <InfoIcon className="h-5 w-5 text-gray-500 mr-2" />
+                    <span className="text-gray-600">Statut:</span>
+                    <span className={`ml-2 font-medium ${selectedProduct.disponible ? 'text-green-600' : 'text-red-600'}`}>
+                      {selectedProduct.disponible ? 'Disponible' : 'Non disponible'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-center">
+                    <PackageIcon className="h-5 w-5 text-gray-500 mr-2" />
+                    <span className="text-gray-600">Stock:</span>
+                    <span className="ml-2 font-medium">{selectedProduct.stock} unités</span>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <TagIcon className="h-5 w-5 text-gray-500 mr-2" />
+                    <span className="text-gray-600">Prix:</span>
+                    <span className="ml-2 font-medium">{selectedProduct.prix} €</span>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <BoxIcon className="h-5 w-5 text-gray-500 mr-2" />
+                    <span className="text-gray-600">Créé le:</span>
+                    <span className="ml-2 font-medium">{formatDate(selectedProduct.date_creation)}</span>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <InfoIcon className="h-5 w-5 text-gray-500 mr-2" />
+                    <span className="text-gray-600">Modifié le:</span>
+                    <span className="ml-2 font-medium">{formatDate(selectedProduct.date_modification)}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">Description</h3>
+                <p className="text-gray-600">{selectedProduct.description}</p>
+              </div>
+
+              {selectedProduct.image_principale && (
+                <div className="mt-6">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">Image principale</h3>
+                  <img
+                    src={selectedProduct.image_principale}
+                    alt={selectedProduct.nom}
+                    className="w-full h-64 object-cover rounded-lg"
+                  />
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </motion.div>
       )}
     </div>
   );
