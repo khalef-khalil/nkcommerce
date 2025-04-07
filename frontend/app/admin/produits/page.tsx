@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { 
@@ -14,7 +14,7 @@ import {
   ImageIcon,
   ArrowUpDownIcon
 } from 'lucide-react';
-import { fetchProducts, fetchCategories, adminDeleteProduct } from '../../services/api';
+import { fetchProducts, fetchCategories, adminDeleteProduct, adminCreateProduct, adminUpdateProduct } from '../../services/api';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 
@@ -51,8 +51,39 @@ export default function ProductsPage() {
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [sortBy, setSortBy] = useState<string>('');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [showAddProduct, setShowAddProduct] = useState(false);
+  const [showEditProduct, setShowEditProduct] = useState(false);
+  const [productToEdit, setProductToEdit] = useState<Product | null>(null);
+  const [formData, setFormData] = useState({
+    nom: '',
+    slug: '',
+    categorie_id: '',
+    description: '',
+    prix: '',
+    stock: '',
+    disponible: true,
+    marque: '',
+    volume: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const router = useRouter();
+
+  // Initialize empty form data
+  const emptyFormData = {
+    nom: '',
+    slug: '',
+    categorie_id: '',
+    description: '',
+    prix: '',
+    stock: '',
+    disponible: true,
+    marque: '',
+    volume: ''
+  };
 
   useEffect(() => {
     const loadData = async () => {
@@ -128,6 +159,203 @@ export default function ProductsPage() {
     setShowModal(true);
   };
 
+  const handleEditClick = (product: Product) => {
+    setProductToEdit(product);
+    // Populate form data with the product's current values
+    setFormData({
+      nom: product.nom,
+      slug: product.slug,
+      categorie_id: product.categorie.id.toString(),
+      description: product.description || '',
+      prix: product.prix,
+      stock: product.stock.toString(),
+      disponible: product.disponible,
+      marque: product.marque || '',
+      volume: product.volume || ''
+    });
+    // Reset image preview
+    setSelectedImage(null);
+    setImagePreview(product.image_principale);
+    setShowEditProduct(true);
+  };
+
+  // Handle form input changes
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    
+    if (type === 'checkbox') {
+      const checked = (e.target as HTMLInputElement).checked;
+      setFormData({
+        ...formData,
+        [name]: checked
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value
+      });
+    }
+  };
+
+  // Auto-generate slug from name
+  const generateSlug = (name: string) => {
+    return name.toLowerCase()
+      .replace(/[^\w\s-]/g, '') // Remove special characters
+      .replace(/\s+/g, '-')     // Replace spaces with hyphens
+      .replace(/-+/g, '-');     // Replace multiple hyphens with single hyphen
+  };
+
+  // Handle name input to auto-generate slug
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const name = e.target.value;
+    setFormData({
+      ...formData,
+      nom: name,
+      slug: generateSlug(name)
+    });
+  };
+
+  // Handle image selection
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setSelectedImage(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Clear selected image
+  const clearSelectedImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleAddProductClick = () => {
+    // Reset form data to empty values
+    setFormData(emptyFormData);
+    setSelectedImage(null);
+    setImagePreview(null);
+    setShowAddProduct(true);
+  };
+
+  // Add product submission
+  const handleAddProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setIsSubmitting(true);
+      
+      // Prepare form data for multipart submission
+      const formDataObj = new FormData();
+      
+      // Add all text fields
+      Object.entries(formData).forEach(([key, value]) => {
+        if (key === 'disponible') {
+          formDataObj.append(key, value ? 'true' : 'false');
+        } else {
+          formDataObj.append(key, value.toString());
+        }
+      });
+      
+      // Add image if selected
+      if (selectedImage) {
+        formDataObj.append('image_principale', selectedImage);
+      }
+      
+      // Call API with FormData - use the correct backend URL
+      const response = await fetch('http://localhost:8000/api/products/', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Token ${getCookieValue('admin_token')}`,
+        },
+        body: formDataObj
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+      
+      const newProduct = await response.json();
+      
+      // Update local state
+      setProducts([...products, newProduct]);
+      toast.success(`${newProduct.nom} a été ajouté avec succès!`);
+      
+      // Reset form and close modal
+      setFormData(emptyFormData);
+      setSelectedImage(null);
+      setImagePreview(null);
+      setShowAddProduct(false);
+    } catch (error: any) {
+      console.error('Error adding product:', error);
+      toast.error(error.message || 'Erreur lors de l\'ajout du produit');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Edit product submission
+  const handleUpdateProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!productToEdit) return;
+    
+    try {
+      setIsSubmitting(true);
+      
+      // Prepare form data for multipart submission
+      const formDataObj = new FormData();
+      
+      // Add all text fields
+      Object.entries(formData).forEach(([key, value]) => {
+        if (key === 'disponible') {
+          formDataObj.append(key, value ? 'true' : 'false');
+        } else {
+          formDataObj.append(key, value.toString());
+        }
+      });
+      
+      // Add image if selected
+      if (selectedImage) {
+        formDataObj.append('image_principale', selectedImage);
+      }
+      
+      // Call API with FormData - use the correct backend URL
+      const response = await fetch(`http://localhost:8000/api/products/${productToEdit.slug}/`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Token ${getCookieValue('admin_token')}`,
+        },
+        body: formDataObj
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+      
+      const updatedProduct = await response.json();
+      
+      // Update local state
+      setProducts(products.map(p => p.id === updatedProduct.id ? updatedProduct : p));
+      toast.success(`${updatedProduct.nom} a été mis à jour avec succès!`);
+      
+      // Close modal
+      setShowEditProduct(false);
+    } catch (error: any) {
+      console.error('Error updating product:', error);
+      toast.error(error.message || 'Erreur lors de la mise à jour du produit');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const confirmDelete = async () => {
     if (!productToDelete) return;
     
@@ -142,6 +370,12 @@ export default function ProductsPage() {
       setShowModal(false);
       setProductToDelete(null);
     }
+  };
+
+  // Helper function to get cookie value
+  const getCookieValue = (name: string): string => {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? match[2] : '';
   };
 
   // Loading state
@@ -170,13 +404,13 @@ export default function ProductsPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <Link 
-            href="/admin/produits/nouveau"
+          <button 
+            onClick={handleAddProductClick}
             className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
           >
             <PlusIcon className="w-5 h-5 mr-2" />
             Ajouter un produit
-          </Link>
+          </button>
         </motion.div>
       </div>
       
@@ -303,7 +537,7 @@ export default function ProductsPage() {
                       <div className="text-sm text-gray-500">{product.categorie.nom}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{parseFloat(product.prix).toLocaleString('fr-FR')} €</div>
+                      <div className="text-sm text-gray-900">{parseFloat(product.prix).toLocaleString('fr-FR')} MRU</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className={`text-sm ${product.stock < 5 ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
@@ -321,12 +555,12 @@ export default function ProductsPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-2">
-                        <Link
-                          href={`/admin/produits/${product.slug}/modifier`}
+                        <button
+                          onClick={() => handleEditClick(product)}
                           className="text-indigo-600 hover:text-indigo-900 p-1.5 rounded-full hover:bg-indigo-50"
                         >
                           <PencilIcon className="h-5 w-5" />
-                        </Link>
+                        </button>
                         <button
                           onClick={() => handleDeleteClick(product)}
                           className="text-red-600 hover:text-red-900 p-1.5 rounded-full hover:bg-red-50"
@@ -377,6 +611,492 @@ export default function ProductsPage() {
                   Supprimer
                 </button>
               </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Add Product Modal */}
+      {showAddProduct && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-lg shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+          >
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-medium text-gray-900">Ajouter un produit</h3>
+                <button
+                  onClick={() => setShowAddProduct(false)}
+                  className="text-gray-400 hover:text-gray-500"
+                >
+                  <XIcon className="h-6 w-6" />
+                </button>
+              </div>
+              
+              <form onSubmit={handleAddProduct} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Nom */}
+                  <div>
+                    <label htmlFor="nom" className="block text-sm font-medium text-gray-700 mb-1">
+                      Nom*
+                    </label>
+                    <input
+                      id="nom"
+                      name="nom"
+                      type="text"
+                      required
+                      value={formData.nom}
+                      onChange={handleNameChange}
+                      className="w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+                  
+                  {/* Slug */}
+                  <div>
+                    <label htmlFor="slug" className="block text-sm font-medium text-gray-700 mb-1">
+                      Slug*
+                    </label>
+                    <input
+                      id="slug"
+                      name="slug"
+                      type="text"
+                      required
+                      value={formData.slug}
+                      onChange={handleInputChange}
+                      className="w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+                  
+                  {/* Catégorie */}
+                  <div>
+                    <label htmlFor="categorie_id" className="block text-sm font-medium text-gray-700 mb-1">
+                      Catégorie*
+                    </label>
+                    <select
+                      id="categorie_id"
+                      name="categorie_id"
+                      required
+                      value={formData.categorie_id}
+                      onChange={handleInputChange}
+                      className="w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    >
+                      <option value="">Sélectionner une catégorie</option>
+                      {categories.map(category => (
+                        <option key={category.id} value={category.id}>
+                          {category.nom}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  {/* Prix */}
+                  <div>
+                    <label htmlFor="prix" className="block text-sm font-medium text-gray-700 mb-1">
+                      Prix (MRU)*
+                    </label>
+                    <input
+                      id="prix"
+                      name="prix"
+                      type="number"
+                      step="0.01"
+                      required
+                      min="0"
+                      value={formData.prix}
+                      onChange={handleInputChange}
+                      className="w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+                  
+                  {/* Stock */}
+                  <div>
+                    <label htmlFor="stock" className="block text-sm font-medium text-gray-700 mb-1">
+                      Stock*
+                    </label>
+                    <input
+                      id="stock"
+                      name="stock"
+                      type="number"
+                      required
+                      min="0"
+                      value={formData.stock}
+                      onChange={handleInputChange}
+                      className="w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+                  
+                  {/* Marque */}
+                  <div>
+                    <label htmlFor="marque" className="block text-sm font-medium text-gray-700 mb-1">
+                      Marque
+                    </label>
+                    <input
+                      id="marque"
+                      name="marque"
+                      type="text"
+                      value={formData.marque}
+                      onChange={handleInputChange}
+                      className="w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+                  
+                  {/* Volume */}
+                  <div>
+                    <label htmlFor="volume" className="block text-sm font-medium text-gray-700 mb-1">
+                      Volume
+                    </label>
+                    <input
+                      id="volume"
+                      name="volume"
+                      type="text"
+                      value={formData.volume}
+                      onChange={handleInputChange}
+                      className="w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+                  
+                  {/* Image Upload */}
+                  <div className="md:col-span-2">
+                    <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-1">
+                      Image principale
+                    </label>
+                    <div className="mt-1 flex items-center">
+                      <div className="w-32 h-32 border-2 border-gray-300 border-dashed rounded-md flex justify-center items-center overflow-hidden relative">
+                        {imagePreview ? (
+                          <>
+                            <img 
+                              src={imagePreview} 
+                              alt="Image preview" 
+                              className="w-full h-full object-cover"
+                            />
+                            <button
+                              type="button"
+                              onClick={clearSelectedImage}
+                              className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 shadow-md"
+                            >
+                              <XIcon className="w-4 h-4" />
+                            </button>
+                          </>
+                        ) : (
+                          <div className="space-y-1 text-center">
+                            <div className="flex justify-center">
+                              <ImageIcon className="h-10 w-10 text-gray-400" />
+                            </div>
+                            <p className="text-xs text-gray-500">Ajouter une image</p>
+                          </div>
+                        )}
+                      </div>
+                      <input
+                        id="image"
+                        name="image"
+                        type="file"
+                        className="sr-only"
+                        ref={fileInputRef}
+                        onChange={handleImageSelect}
+                        accept="image/*"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="ml-5 bg-white py-2 px-3 border border-gray-300 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                      >
+                        Choisir une image
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Disponibilité */}
+                  <div className="flex items-center mt-3">
+                    <input
+                      id="disponible"
+                      name="disponible"
+                      type="checkbox"
+                      checked={formData.disponible}
+                      onChange={(e) => setFormData({...formData, disponible: e.target.checked})}
+                      className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                    />
+                    <label htmlFor="disponible" className="ml-2 block text-sm text-gray-700">
+                      Disponible
+                    </label>
+                  </div>
+                </div>
+                
+                {/* Description */}
+                <div>
+                  <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+                    Description
+                  </label>
+                  <textarea
+                    id="description"
+                    name="description"
+                    rows={3}
+                    value={formData.description}
+                    onChange={handleInputChange}
+                    className="w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+                
+                <div className="flex justify-end space-x-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddProduct(false)}
+                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? 'Enregistrement...' : 'Ajouter le produit'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Edit Product Modal */}
+      {showEditProduct && productToEdit && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-lg shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+          >
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-medium text-gray-900">Modifier: {productToEdit.nom}</h3>
+                <button
+                  onClick={() => setShowEditProduct(false)}
+                  className="text-gray-400 hover:text-gray-500"
+                >
+                  <XIcon className="h-6 w-6" />
+                </button>
+              </div>
+              
+              <form onSubmit={handleUpdateProduct} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Nom */}
+                  <div>
+                    <label htmlFor="edit-nom" className="block text-sm font-medium text-gray-700 mb-1">
+                      Nom*
+                    </label>
+                    <input
+                      id="edit-nom"
+                      name="nom"
+                      type="text"
+                      required
+                      value={formData.nom}
+                      onChange={handleNameChange}
+                      className="w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+                  
+                  {/* Slug */}
+                  <div>
+                    <label htmlFor="edit-slug" className="block text-sm font-medium text-gray-700 mb-1">
+                      Slug*
+                    </label>
+                    <input
+                      id="edit-slug"
+                      name="slug"
+                      type="text"
+                      required
+                      value={formData.slug}
+                      onChange={handleInputChange}
+                      className="w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+                  
+                  {/* Catégorie */}
+                  <div>
+                    <label htmlFor="edit-categorie_id" className="block text-sm font-medium text-gray-700 mb-1">
+                      Catégorie*
+                    </label>
+                    <select
+                      id="edit-categorie_id"
+                      name="categorie_id"
+                      required
+                      value={formData.categorie_id}
+                      onChange={handleInputChange}
+                      className="w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    >
+                      <option value="">Sélectionner une catégorie</option>
+                      {categories.map(category => (
+                        <option key={category.id} value={category.id}>
+                          {category.nom}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  {/* Prix */}
+                  <div>
+                    <label htmlFor="edit-prix" className="block text-sm font-medium text-gray-700 mb-1">
+                      Prix (MRU)*
+                    </label>
+                    <input
+                      id="edit-prix"
+                      name="prix"
+                      type="number"
+                      step="0.01"
+                      required
+                      min="0"
+                      value={formData.prix}
+                      onChange={handleInputChange}
+                      className="w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+                  
+                  {/* Stock */}
+                  <div>
+                    <label htmlFor="edit-stock" className="block text-sm font-medium text-gray-700 mb-1">
+                      Stock*
+                    </label>
+                    <input
+                      id="edit-stock"
+                      name="stock"
+                      type="number"
+                      required
+                      min="0"
+                      value={formData.stock}
+                      onChange={handleInputChange}
+                      className="w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+                  
+                  {/* Marque */}
+                  <div>
+                    <label htmlFor="edit-marque" className="block text-sm font-medium text-gray-700 mb-1">
+                      Marque
+                    </label>
+                    <input
+                      id="edit-marque"
+                      name="marque"
+                      type="text"
+                      value={formData.marque}
+                      onChange={handleInputChange}
+                      className="w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+                  
+                  {/* Volume */}
+                  <div>
+                    <label htmlFor="edit-volume" className="block text-sm font-medium text-gray-700 mb-1">
+                      Volume
+                    </label>
+                    <input
+                      id="edit-volume"
+                      name="volume"
+                      type="text"
+                      value={formData.volume}
+                      onChange={handleInputChange}
+                      className="w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                  </div>
+                  
+                  {/* Image Upload */}
+                  <div className="md:col-span-2">
+                    <label htmlFor="edit-image" className="block text-sm font-medium text-gray-700 mb-1">
+                      Image principale
+                    </label>
+                    <div className="mt-1 flex items-center">
+                      <div className="w-32 h-32 border-2 border-gray-300 border-dashed rounded-md flex justify-center items-center overflow-hidden relative">
+                        {imagePreview ? (
+                          <>
+                            <img 
+                              src={imagePreview} 
+                              alt="Image preview" 
+                              className="w-full h-full object-cover"
+                            />
+                            <button
+                              type="button"
+                              onClick={clearSelectedImage}
+                              className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 shadow-md"
+                            >
+                              <XIcon className="w-4 h-4" />
+                            </button>
+                          </>
+                        ) : (
+                          <div className="space-y-1 text-center">
+                            <div className="flex justify-center">
+                              <ImageIcon className="h-10 w-10 text-gray-400" />
+                            </div>
+                            <p className="text-xs text-gray-500">Ajouter une image</p>
+                          </div>
+                        )}
+                      </div>
+                      <input
+                        id="edit-image"
+                        name="image"
+                        type="file"
+                        className="sr-only"
+                        ref={fileInputRef}
+                        onChange={handleImageSelect}
+                        accept="image/*"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="ml-5 bg-white py-2 px-3 border border-gray-300 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                      >
+                        {productToEdit?.image_principale ? 'Changer l\'image' : 'Ajouter une image'}
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Disponibilité */}
+                  <div className="flex items-center mt-3">
+                    <input
+                      id="edit-disponible"
+                      name="disponible"
+                      type="checkbox"
+                      checked={formData.disponible}
+                      onChange={(e) => setFormData({...formData, disponible: e.target.checked})}
+                      className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                    />
+                    <label htmlFor="edit-disponible" className="ml-2 block text-sm text-gray-700">
+                      Disponible
+                    </label>
+                  </div>
+                </div>
+                
+                {/* Description */}
+                <div>
+                  <label htmlFor="edit-description" className="block text-sm font-medium text-gray-700 mb-1">
+                    Description
+                  </label>
+                  <textarea
+                    id="edit-description"
+                    name="description"
+                    rows={3}
+                    value={formData.description}
+                    onChange={handleInputChange}
+                    className="w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+                
+                <div className="flex justify-end space-x-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowEditProduct(false)}
+                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? 'Enregistrement...' : 'Mettre à jour le produit'}
+                  </button>
+                </div>
+              </form>
             </div>
           </motion.div>
         </div>
