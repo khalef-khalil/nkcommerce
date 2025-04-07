@@ -135,10 +135,10 @@ export default function AdminDashboardPage() {
             </div>
             <div className="ml-4">
               <p className="text-sm text-gray-500">Ventes Totales</p>
-              <h3 className="text-2xl font-semibold text-gray-800">
+              <h3 className="text-xl font-semibold text-gray-800">
                 {salesStats?.total_sales?.total 
-                  ? `${salesStats.total_sales.total.toLocaleString('fr-FR')} €` 
-                  : '0 €'}
+                  ? `${salesStats.total_sales.total.toLocaleString('fr-FR')} MRU` 
+                  : '0 MRU'}
               </h3>
             </div>
           </div>
@@ -147,8 +147,8 @@ export default function AdminDashboardPage() {
               <span className="text-gray-500">Valeur moyenne</span>
               <span className="font-medium">
                 {salesStats?.average_order_value?.avg 
-                  ? `${salesStats.average_order_value.avg.toLocaleString('fr-FR')} €` 
-                  : '0 €'}
+                  ? `${salesStats.average_order_value.avg.toLocaleString('fr-FR')} MRU` 
+                  : '0 MRU'}
               </span>
             </div>
           </div>
@@ -247,7 +247,7 @@ export default function AdminDashboardPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-500">
-                        {product.total_sales.toLocaleString('fr-FR')} €
+                        {product.total_sales.toLocaleString('fr-FR')} MRU
                       </div>
                     </td>
                   </tr>
@@ -342,7 +342,7 @@ export default function AdminDashboardPage() {
                   <div className="flex-1">
                     <div className="flex justify-between">
                       <p className="text-sm font-medium text-gray-800">{customer.nom_complet}</p>
-                      <p className="text-sm font-medium text-gray-800">{customer.total_spent.toLocaleString('fr-FR')} €</p>
+                      <p className="text-sm font-medium text-gray-800">{customer.total_spent.toLocaleString('fr-FR')} MRU</p>
                     </div>
                     <p className="text-xs text-gray-500">{customer.order_count} commande{customer.order_count > 1 ? 's' : ''}</p>
                   </div>

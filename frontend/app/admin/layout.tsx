@@ -65,19 +65,15 @@ export default function AdminRootLayout({
   const isAuthRoute = pathname === '/admin/connexion' || pathname === '/admin/deconnexion';
 
   return (
-    <html lang="fr">
-      <body>
-        <AdminAuthProvider>
-          <Toaster position="top-right" />
-          {isAuthRoute ? (
-            <div className="min-h-screen bg-gray-100">
-              {children}
-            </div>
-          ) : (
-            <AdminDashboardWrapper>{children}</AdminDashboardWrapper>
-          )}
-        </AdminAuthProvider>
-      </body>
-    </html>
+    <AdminAuthProvider>
+      <Toaster position="top-right" />
+      {isAuthRoute ? (
+        <div className="min-h-screen bg-gray-100">
+          {children}
+        </div>
+      ) : (
+        <AdminDashboardWrapper>{children}</AdminDashboardWrapper>
+      )}
+    </AdminAuthProvider>
   );
 } 

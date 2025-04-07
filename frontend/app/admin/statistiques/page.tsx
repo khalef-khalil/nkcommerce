@@ -190,8 +190,8 @@ export default function StatsPage() {
                 </p>
                 <h3 className="text-2xl font-bold text-gray-800">
                   {salesStats?.total_sales?.total 
-                    ? `${salesStats.total_sales.total.toLocaleString('fr-FR')} €` 
-                    : '0 €'}
+                    ? `${salesStats.total_sales.total.toLocaleString('fr-FR')} MRU` 
+                    : '0 MRU'}
                 </h3>
               </div>
               <div className="bg-blue-100 p-2 rounded-full">
@@ -219,8 +219,8 @@ export default function StatsPage() {
                 </p>
                 <h3 className="text-2xl font-bold text-gray-800">
                   {salesStats?.average_order_value?.avg 
-                    ? `${salesStats.average_order_value.avg.toLocaleString('fr-FR')} €` 
-                    : '0 €'}
+                    ? `${salesStats.average_order_value.avg.toLocaleString('fr-FR')} MRU` 
+                    : '0 MRU'}
                 </h3>
               </div>
               <div className="bg-purple-100 p-2 rounded-full">
@@ -291,7 +291,7 @@ export default function StatsPage() {
                   <div className="ml-3 flex-1">
                     <div className="flex justify-between">
                       <p className="text-sm font-medium text-gray-700">{product.produit__nom}</p>
-                      <p className="text-sm font-medium text-gray-900">{product.total_sales.toLocaleString('fr-FR')} €</p>
+                      <p className="text-sm font-medium text-gray-900">{product.total_sales.toLocaleString('fr-FR')} MRU</p>
                     </div>
                     <div className="flex justify-between text-xs text-gray-500">
                       <p>{product.total_quantity} unités vendues</p>
@@ -336,7 +336,7 @@ export default function StatsPage() {
                   <div className="ml-3 flex-1">
                     <div className="flex justify-between">
                       <p className="text-sm font-medium text-gray-700">{customer.nom_complet}</p>
-                      <p className="text-sm font-medium text-gray-900">{customer.total_spent.toLocaleString('fr-FR')} €</p>
+                      <p className="text-sm font-medium text-gray-900">{customer.total_spent.toLocaleString('fr-FR')} MRU</p>
                     </div>
                     <div className="flex justify-between text-xs text-gray-500">
                       <p>{customer.email}</p>
@@ -434,7 +434,7 @@ export default function StatsPage() {
               <div key={product.produit__id}>
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-sm font-medium text-gray-700">{product.produit__nom}</span>
-                  <span className="text-sm font-medium text-gray-700">{product.total_sales.toLocaleString('fr-FR')} €</span>
+                  <span className="text-sm font-medium text-gray-700">{product.total_sales.toLocaleString('fr-FR')} MRU</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2.5">
                   <div 
@@ -531,7 +531,7 @@ export default function StatsPage() {
                       <div className="text-sm text-gray-500">{customer.order_count}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <div className="text-sm font-medium text-gray-900">{customer.total_spent.toLocaleString('fr-FR')} €</div>
+                      <div className="text-sm font-medium text-gray-900">{customer.total_spent.toLocaleString('fr-FR')} MRU</div>
                     </td>
                   </tr>
                 ))}

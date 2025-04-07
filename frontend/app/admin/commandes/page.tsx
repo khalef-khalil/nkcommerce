@@ -291,7 +291,7 @@ export default function OrdersPage() {
                       <div className="text-sm text-gray-500">{formatDate(order.date_creation)}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{parseFloat(order.montant_total).toLocaleString('fr-FR')} €</div>
+                      <div className="text-sm text-gray-900">{parseFloat(order.montant_total).toLocaleString('fr-FR')} MRU</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span 
@@ -378,7 +378,7 @@ export default function OrdersPage() {
                     <h4 className="font-medium text-gray-700">Détails paiement</h4>
                   </div>
                   <p className="text-sm mb-1">
-                    <span className="font-medium">Montant total:</span> {parseFloat(selectedOrder.montant_total).toLocaleString('fr-FR')} €
+                    <span className="font-medium">Montant total:</span> {parseFloat(selectedOrder.montant_total).toLocaleString('fr-FR')} MRU
                   </p>
                   <p className="text-sm mb-1">
                     <span className="font-medium">Statut:</span> 
@@ -434,13 +434,13 @@ export default function OrdersPage() {
                           <div className="text-sm font-medium text-gray-900">{item.produit.nom}</div>
                         </td>
                         <td className="px-4 py-3 text-center">
-                          <div className="text-sm text-gray-500">{parseFloat(item.prix).toLocaleString('fr-FR')} €</div>
+                          <div className="text-sm text-gray-500">{parseFloat(item.prix).toLocaleString('fr-FR')} MRU</div>
                         </td>
                         <td className="px-4 py-3 text-center">
                           <div className="text-sm text-gray-500">{item.quantite}</div>
                         </td>
                         <td className="px-4 py-3 text-right">
-                          <div className="text-sm font-medium text-gray-900">{item.montant_total.toLocaleString('fr-FR')} €</div>
+                          <div className="text-sm font-medium text-gray-900">{item.montant_total.toLocaleString('fr-FR')} MRU</div>
                         </td>
                       </tr>
                     ))}
@@ -451,7 +451,7 @@ export default function OrdersPage() {
                         Total
                       </td>
                       <td className="px-4 py-3 text-right text-sm font-bold text-gray-900">
-                        {parseFloat(selectedOrder.montant_total).toLocaleString('fr-FR')} €
+                        {parseFloat(selectedOrder.montant_total).toLocaleString('fr-FR')} MRU
                       </td>
                     </tr>
                   </tfoot>
