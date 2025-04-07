@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, ShoppingCart, Menu, X, User, LogOut } from "lucide-react";
@@ -11,7 +11,12 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const { user, isAuthenticated, logoutUser } = useAuth();
-  const { cart } = useCart();
+  const { cart, refreshCart } = useCart();
+
+  // Refresh cart when component mounts
+  useEffect(() => {
+    refreshCart();
+  }, [refreshCart]);
 
   return (
     <header className="bg-white shadow-sm">

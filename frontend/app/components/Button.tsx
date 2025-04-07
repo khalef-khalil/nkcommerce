@@ -7,6 +7,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "outline";
   fullWidth?: boolean;
   isLoading?: boolean;
+  className?: string;
 }
 
 const Button = ({
@@ -14,12 +15,13 @@ const Button = ({
   variant = "primary",
   fullWidth = false,
   isLoading = false,
+  className = "",
   ...props
 }: ButtonProps) => {
   const variantClasses = {
-    primary: "bg-primary text-white hover:bg-primary/90",
-    secondary: "bg-secondary text-white hover:bg-secondary/90",
-    outline: "bg-transparent border border-primary text-primary hover:bg-primary/10",
+    primary: "bg-primary text-white hover:bg-[#511b7d] hover:text-white",
+    secondary: "bg-secondary text-white hover:bg-[#7a43b8] hover:text-white",
+    outline: "bg-transparent border border-primary text-primary hover:bg-[#f8f0ff] hover:text-primary",
   };
 
   return (
@@ -30,7 +32,7 @@ const Button = ({
         variantClasses[variant]
       } ${
         fullWidth ? "w-full" : ""
-      } py-2.5 px-4 rounded-md transition-all duration-200 font-medium flex items-center justify-center`}
+      } py-2.5 px-4 rounded-md transition-all duration-200 font-medium flex items-center justify-center shadow-sm ${className}`}
       disabled={isLoading || props.disabled}
       {...props}
     >

@@ -12,11 +12,13 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product }: ProductCardProps) => {
-  const { addToCart } = useCart();
+  const { addToCart, refreshCart } = useCart();
   
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent navigation to product page
-    addToCart(product.id, 1);
+    await addToCart(product.id, 1);
+    // Refresh cart to ensure UI is updated
+    refreshCart();
   };
 
   return (
@@ -56,7 +58,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
           </div>
           <div className="mt-4">
             <motion.button 
-              className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-secondary text-white rounded-md hover:bg-secondary/90 transition-colors"
+              className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-secondary text-white rounded-md hover:bg-[#7a43b8] hover:text-white transition-colors"
               disabled={!product.disponible}
               onClick={handleAddToCart}
               whileTap={{ scale: 0.95 }}

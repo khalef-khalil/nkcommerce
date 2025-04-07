@@ -4,6 +4,7 @@ import Carousel from "../components/Carousel";
 import { fetchProducts, fetchCategories } from "../services/api";
 import ProductCard from "../components/ProductCard";
 import CategoryCard from "../components/CategoryCard";
+import Button from "../components/Button";
 
 export default async function Home() {
   // Fetch data
@@ -39,9 +40,11 @@ export default async function Home() {
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
-          <div className="mt-10 text-center">
-            <Link href="/catalogue" className="btn-primary">
-              Voir tout le catalogue
+          <div className="mt-10 flex justify-center">
+            <Link href="/catalogue" passHref>
+              <Button variant="primary">
+                Voir tout le catalogue
+              </Button>
             </Link>
           </div>
         </div>
@@ -97,8 +100,10 @@ export default async function Home() {
               <p className="mb-6">
                 Notre mission est de vous offrir des produits authentiques à des prix compétitifs, avec un service client exceptionnel.
               </p>
-              <Link href="/a-propos" className="btn-secondary">
-                En savoir plus
+              <Link href="/a-propos" passHref>
+                <Button variant="secondary">
+                  En savoir plus
+                </Button>
               </Link>
             </div>
             <div className="relative h-80 md:h-96">

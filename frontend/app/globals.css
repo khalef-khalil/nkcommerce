@@ -38,11 +38,11 @@ body {
 
 @layer components {
   .btn-primary {
-    @apply bg-primary text-white py-2 px-4 rounded-md hover:bg-primary/90 transition-all;
+    @apply bg-primary text-white py-2 px-4 rounded-md hover:bg-[#511b7d] hover:text-white transition-all shadow-sm h-12 flex items-center justify-center;
   }
 
   .btn-secondary {
-    @apply bg-secondary text-white py-2 px-4 rounded-md hover:bg-secondary/90 transition-all;
+    @apply bg-secondary text-white py-2 px-4 rounded-md hover:bg-[#7a43b8] hover:text-white transition-all shadow-sm h-12 flex items-center justify-center;
   }
 
   .container-custom {

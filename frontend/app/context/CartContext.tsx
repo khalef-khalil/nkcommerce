@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { 
   fetchCart, 
   addToCart as apiAddToCart,
@@ -30,22 +30,25 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const { token } = useAuth();
   
-  const refreshCart = async () => {
+  const refreshCart = useCallback(async () => {
     try {
       setIsLoading(true);
       const cartData = await fetchCart();
       setCart(cartData);
     } catch (error) {
       console.error('Failed to fetch cart:', error);
-      toast.error("Impossible de récupérer le panier");
+      // Only show error toast if it's a serious error, not just an empty cart
+      if (error instanceof Error && !error.message.includes('404')) {
+        toast.error("Impossible de récupérer le panier");
+      }
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     refreshCart();
-  }, [token]); // Refresh cart when auth token changes
+  }, [token, refreshCart]); // Refresh cart when auth token changes
 
   const addToCart = async (productId: number, quantity: number) => {
     try {
@@ -53,9 +56,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       const updatedCart = await apiAddToCart(productId, quantity);
       setCart(updatedCart);
       toast.success(`Produit ajouté au panier`);
+      return updatedCart;
     } catch (error) {
       console.error('Failed to add to cart:', error);
       toast.error("Impossible d'ajouter au panier");
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -66,9 +71,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(true);
       const updatedCart = await apiUpdateCartItem(itemId, quantity);
       setCart(updatedCart);
+      return updatedCart;
     } catch (error) {
       console.error('Failed to update cart item:', error);
       toast.error("Impossible de mettre à jour le panier");
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -80,9 +87,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       const updatedCart = await apiRemoveCartItem(itemId);
       setCart(updatedCart);
       toast.success("Produit retiré du panier");
+      return updatedCart;
     } catch (error) {
       console.error('Failed to remove cart item:', error);
       toast.error("Impossible de retirer du panier");
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -94,9 +103,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       const updatedCart = await apiClearCartItems();
       setCart(updatedCart);
       toast.success("Panier vidé");
+      return updatedCart;
     } catch (error) {
       console.error('Failed to clear cart:', error);
       toast.error("Impossible de vider le panier");
+      throw error;
     } finally {
       setIsLoading(false);
     }

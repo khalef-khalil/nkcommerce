@@ -10,6 +10,7 @@ import { Product } from "../../../types";
 import { notFound } from "next/navigation";
 import toast from "react-hot-toast";
 import { useCart } from "../../../context/CartContext";
+import Button from "../../../components/Button";
 
 interface ProductDetailPageProps {
   params: {
@@ -24,7 +25,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const { addToCart } = useCart();
+  const { addToCart, refreshCart } = useCart();
 
   useEffect(() => {
     const loadData = async () => {
@@ -54,9 +55,11 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     loadData();
   }, [slug]);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (product) {
-      addToCart(product.id, quantity);
+      await addToCart(product.id, quantity);
+      // Refresh cart to ensure UI is updated
+      refreshCart();
     }
   };
 
@@ -219,7 +222,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                       <div className="flex items-center border border-gray-300 rounded-md">
                         <button
                           onClick={decrementQuantity}
-                          className="px-3 py-1 border-r border-gray-300"
+                          className="px-3 py-1 border-r border-gray-300 hover:bg-gray-100 transition-colors"
                           disabled={quantity <= 1}
                         >
                           <Minus size={16} />
@@ -227,7 +230,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                         <span className="px-4 py-1">{quantity}</span>
                         <button
                           onClick={incrementQuantity}
-                          className="px-3 py-1 border-l border-gray-300"
+                          className="px-3 py-1 border-l border-gray-300 hover:bg-gray-100 transition-colors"
                           disabled={quantity >= product.stock}
                         >
                           <Plus size={16} />
@@ -236,15 +239,19 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                     </div>
                     
                     <div className="flex space-x-4">
-                      <button
-                        onClick={handleAddToCart}
-                        className="flex-1 btn-primary flex items-center justify-center gap-2"
-                      >
-                        <ShoppingCart size={18} />
-                        <span>Ajouter au panier</span>
-                      </button>
-                      <button className="p-3 border border-gray-300 rounded-md hover:bg-gray-100 transition-colors">
-                        <Heart size={18} />
+                      <div className="flex-1">
+                        <Button
+                          onClick={handleAddToCart}
+                          variant="primary"
+                          fullWidth
+                          className="flex items-center justify-center gap-2 py-3 text-base h-12"
+                        >
+                          <ShoppingCart size={18} />
+                          <span>Ajouter au panier</span>
+                        </Button>
+                      </div>
+                      <button className="p-3 border border-gray-300 rounded-md hover:bg-gray-100 transition-colors flex items-center justify-center h-12 w-12 shadow-sm">
+                        <Heart size={18} className="text-gray-600 hover:text-primary" />
                       </button>
                     </div>
                   </>
