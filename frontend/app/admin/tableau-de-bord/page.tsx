@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { BarChart3Icon, ShoppingCartIcon, UsersIcon, TrendingUpIcon, CircleDollarSignIcon, ShoppingBagIcon, Clock8Icon, CheckCheckIcon } from 'lucide-react';
 import { fetchOrderStats, fetchSalesStats, fetchUserStats } from '../../services/api';
+import Link from 'next/link';
 
 type OrderStatsType = {
   total_orders: number;
@@ -317,10 +318,10 @@ export default function AdminDashboardPage() {
           </div>
           
           <div className="mt-6">
-            <button className="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center">
+            <Link href="/admin/commandes" className="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center">
               <ShoppingBagIcon size={16} className="mr-2" />
               Voir toutes les commandes
-            </button>
+            </Link>
           </div>
         </motion.div>
         
@@ -351,13 +352,6 @@ export default function AdminDashboardPage() {
             ) : (
               <p className="text-sm text-gray-500">Aucun client pour le moment</p>
             )}
-          </div>
-          
-          <div className="mt-6">
-            <button className="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center">
-              <UsersIcon size={16} className="mr-2" />
-              Voir tous les clients
-            </button>
           </div>
         </motion.div>
       </div>
