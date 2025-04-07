@@ -274,7 +274,7 @@ export default function OrdersPage() {
                 </th>
                 <th 
                   scope="col" 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  className="hidden md:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                   onClick={() => toggleSort('date_creation')}
                 >
                   <div className="flex items-center">
@@ -284,7 +284,7 @@ export default function OrdersPage() {
                 </th>
                 <th 
                   scope="col" 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  className="hidden md:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                   onClick={() => toggleSort('montant_total')}
                 >
                   <div className="flex items-center">
@@ -292,7 +292,7 @@ export default function OrdersPage() {
                     <ArrowUpDownIcon className="w-4 h-4 ml-1" />
                   </div>
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="hidden md:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Statut
                 </th>
                 <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -308,16 +308,30 @@ export default function OrdersPage() {
                       <div className="text-sm text-gray-900">#{order.id}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{order.nom_complet}</div>
-                      <div className="text-xs text-gray-500">{order.email}</div>
+                      <div className="text-sm font-medium text-gray-900">
+                        <span className="md:hidden">
+                          {order.nom_complet.length > 20 ? `${order.nom_complet.substring(0, 20)}...` : order.nom_complet}
+                        </span>
+                        <span className="hidden md:inline">{order.nom_complet}</span>
+                      </div>
+                      <div className="text-xs text-gray-500 hidden md:block">{order.email}</div>
+                      <div className="text-xs text-gray-500 md:hidden">
+                        <span className={`
+                          ${order.statut === 'confirmee' ? 'text-green-600' : 'text-yellow-600'} font-medium
+                        `}>
+                          {order.statut === 'confirmee' ? 'Confirmée' : 'En attente'}
+                        </span>
+                        <span className="mx-1">•</span>
+                        <span>{parseFloat(order.montant_total).toLocaleString('fr-FR')} MRU</span>
+                      </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-500">{formatDate(order.date_creation)}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{parseFloat(order.montant_total).toLocaleString('fr-FR')} MRU</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap">
                       <span 
                         className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                           order.statut === 'confirmee' 

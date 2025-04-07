@@ -508,12 +508,12 @@ export default function ProductsPage() {
                     <ArrowUpDownIcon className="w-4 h-4 ml-1" />
                   </div>
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="hidden md:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Catégorie
                 </th>
                 <th 
                   scope="col" 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  className="hidden md:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                   onClick={() => toggleSort('prix')}
                 >
                   <div className="flex items-center">
@@ -523,7 +523,7 @@ export default function ProductsPage() {
                 </th>
                 <th 
                   scope="col" 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  className="hidden md:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                   onClick={() => toggleSort('stock')}
                 >
                   <div className="flex items-center">
@@ -531,7 +531,7 @@ export default function ProductsPage() {
                     <ArrowUpDownIcon className="w-4 h-4 ml-1" />
                   </div>
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="hidden md:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Statut
                 </th>
                 <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -557,21 +557,31 @@ export default function ProductsPage() {
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{product.nom}</div>
-                      <div className="text-xs text-gray-500">{product.marque}</div>
+                      <div className="text-sm font-medium text-gray-900">
+                        <span className="md:hidden">
+                          {product.nom.length > 20 ? `${product.nom.substring(0, 20)}...` : product.nom}
+                        </span>
+                        <span className="hidden md:inline">{product.nom}</span>
+                      </div>
+                      <div className="text-xs text-gray-500 md:hidden">
+                        <span>{product.marque}</span>
+                        <span className="mx-1">•</span>
+                        <span>{parseFloat(product.prix).toLocaleString('fr-FR')} MRU</span>
+                      </div>
+                      <div className="text-xs text-gray-500 hidden md:block">{product.marque}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-500">{product.categorie.nom}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{parseFloat(product.prix).toLocaleString('fr-FR')} MRU</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap">
                       <div className={`text-sm ${product.stock < 5 ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
                         {product.stock} unités
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                         product.disponible 
                           ? 'bg-green-100 text-green-800' 
@@ -584,19 +594,19 @@ export default function ProductsPage() {
                       <div className="flex justify-end space-x-2">
                         <button
                           onClick={() => viewProductDetails(product)}
-                          className="text-indigo-600 hover:text-indigo-900"
+                          className="text-indigo-600 hover:text-indigo-900 p-1.5 rounded-full hover:bg-indigo-50"
                         >
                           <EyeIcon className="h-5 w-5" />
                         </button>
                         <button
                           onClick={() => handleEditClick(product)}
-                          className="text-blue-600 hover:text-blue-900"
+                          className="text-indigo-600 hover:text-indigo-900 p-1.5 rounded-full hover:bg-indigo-50"
                         >
                           <PencilIcon className="h-5 w-5" />
                         </button>
                         <button
                           onClick={() => handleDeleteClick(product)}
-                          className="text-red-600 hover:text-red-900"
+                          className="text-red-600 hover:text-red-900 p-1.5 rounded-full hover:bg-red-50"
                         >
                           <Trash2Icon className="h-5 w-5" />
                         </button>
