@@ -16,7 +16,7 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
   (config) => {
     // Check for admin token first for admin routes
-    if (config.url?.includes('/admin/') || config.url?.includes('/orders/stats/')) {
+    if (config.url?.includes('/admin/') || config.url?.includes('/orders/stats/') || config.url?.includes('/orders/commandes/')) {
       const adminToken = Cookies.get('admin_token');
       if (adminToken) {
         config.headers['Authorization'] = `Token ${adminToken}`;
@@ -167,7 +167,7 @@ export const adminDeleteProduct = async (slug: string) => {
 
 // Admin Orders Management
 export const adminFetchAllOrders = async () => {
-  const response = await apiClient.get('/orders/admin/commandes/');
+  const response = await apiClient.get('/orders/commandes/');
   return response.data;
 };
 
@@ -192,4 +192,4 @@ export const fetchUserStats = async () => {
   return response.data;
 };
 
-export default apiClient; 
+export default apiClient;

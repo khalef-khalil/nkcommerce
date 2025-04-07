@@ -1,6 +1,5 @@
 "use client";
 
-import { Toaster } from "react-hot-toast";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
@@ -37,8 +36,6 @@ export default function AuthLayout({
           <p>© {new Date().getFullYear()} NK Commerce. Tous droits réservés.</p>
         </div>
       </footer>
-
-      <Toaster position="top-center" />
     </div>
   );
 } 

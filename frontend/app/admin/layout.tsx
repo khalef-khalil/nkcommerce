@@ -66,7 +66,6 @@ export default function AdminRootLayout({
 
   return (
     <AdminAuthProvider>
-      <Toaster position="top-right" />
       {isAuthRoute ? (
         <div className="min-h-screen bg-gray-100">
           {children}

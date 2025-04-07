@@ -11,7 +11,9 @@ import {
   ArrowUpDownIcon,
   UserIcon,
   CalendarIcon,
-  CircleDollarSignIcon
+  CircleDollarSignIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
 } from 'lucide-react';
 import { adminFetchAllOrders, adminConfirmOrder } from '../../services/api';
 import toast from 'react-hot-toast';
@@ -54,6 +56,9 @@ export default function OrdersPage() {
   const [showOrderDetails, setShowOrderDetails] = useState(false);
   const [sortBy, setSortBy] = useState<string>('date_creation');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(10);
   
   const fetchOrders = async () => {
     try {
@@ -133,6 +138,25 @@ export default function OrdersPage() {
     if (compareA > compareB) return sortOrder === 'asc' ? 1 : -1;
     return 0;
   });
+
+  // Pagination calculation
+  const totalPages = Math.ceil(sortedOrders.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = sortedOrders.slice(indexOfFirstItem, indexOfLastItem);
+
+  // Change page
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+
+  // Go to previous page
+  const goToPreviousPage = () => {
+    setCurrentPage(prevPage => Math.max(prevPage - 1, 1));
+  };
+
+  // Go to next page
+  const goToNextPage = () => {
+    setCurrentPage(prevPage => Math.min(prevPage + 1, totalPages));
+  };
 
   const toggleSort = (field: string) => {
     if (sortBy === field) {
@@ -277,8 +301,8 @@ export default function OrdersPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {sortedOrders.length > 0 ? (
-                sortedOrders.map((order) => (
+              {currentItems.length > 0 ? (
+                currentItems.map((order) => (
                   <tr key={order.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">#{order.id}</div>
@@ -334,6 +358,91 @@ export default function OrdersPage() {
             </tbody>
           </table>
         </div>
+        
+        {/* Pagination */}
+        {sortedOrders.length > 0 && (
+          <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+            <div className="flex-1 flex justify-between items-center">
+              <div>
+                <p className="text-sm text-gray-700">
+                  Affichage de <span className="font-medium">{indexOfFirstItem + 1}</span> à <span className="font-medium">
+                    {Math.min(indexOfLastItem, sortedOrders.length)}
+                  </span> sur <span className="font-medium">{sortedOrders.length}</span> commandes
+                </p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="mr-2">
+                  <select
+                    value={itemsPerPage}
+                    onChange={(e) => {
+                      setItemsPerPage(Number(e.target.value));
+                      setCurrentPage(1); // Reset to first page when changing items per page
+                    }}
+                    className="border-gray-300 rounded-md text-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  >
+                    <option value={5}>5 par page</option>
+                    <option value={10}>10 par page</option>
+                    <option value={20}>20 par page</option>
+                    <option value={50}>50 par page</option>
+                  </select>
+                </div>
+                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                  <button
+                    onClick={goToPreviousPage}
+                    disabled={currentPage === 1}
+                    className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${
+                      currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="sr-only">Page précédente</span>
+                    <ChevronLeftIcon className="h-5 w-5" />
+                  </button>
+                  
+                  {Array.from({ length: Math.min(5, totalPages) }).map((_, index) => {
+                    let pageNumber;
+                    
+                    // Logic to show proper page numbers when there are many pages
+                    if (totalPages <= 5) {
+                      pageNumber = index + 1;
+                    } else if (currentPage <= 3) {
+                      pageNumber = index + 1;
+                      if (index === 4) pageNumber = totalPages;
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNumber = totalPages - 4 + index;
+                    } else {
+                      pageNumber = currentPage - 2 + index;
+                    }
+                    
+                    return (
+                      <button
+                        key={pageNumber}
+                        onClick={() => paginate(pageNumber)}
+                        className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                          currentPage === pageNumber
+                            ? 'z-10 bg-indigo-50 border-indigo-500 text-indigo-600'
+                            : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                        }`}
+                      >
+                        {pageNumber}
+                      </button>
+                    );
+                  })}
+                  
+                  <button
+                    onClick={goToNextPage}
+                    disabled={currentPage === totalPages}
+                    className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${
+                      currentPage === totalPages ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="sr-only">Page suivante</span>
+                    <ChevronRightIcon className="h-5 w-5" />
+                  </button>
+                </nav>
+              </div>
+            </div>
+          </div>
+        )}
       </motion.div>
 
       {/* Order details modal */}
